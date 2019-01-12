@@ -7,7 +7,7 @@ class Texture
 {
 public:
 	unsigned int ID;
-	Texture(const GLchar* path, GLint format);
-	void use(GLenum textureUnit);
+	Texture(const char* path);
+	void use(GLenum textureUnit = GL_TEXTURE0);
 };
 
