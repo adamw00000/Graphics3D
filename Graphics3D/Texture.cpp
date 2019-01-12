@@ -1,6 +1,5 @@
 #include "Texture.h"
 
-
 Texture::Texture(const GLchar * path, GLint format)
 {
 	glGenTextures(1, &ID);
