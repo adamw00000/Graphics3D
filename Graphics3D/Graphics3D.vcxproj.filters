@@ -21,6 +21,8 @@
     <None Include="lamp.vertex.shader" />
     <None Include="lighting.vertex.shader" />
     <None Include="lighting.fragment.shader" />
+    <None Include="model.vertex.shader" />
+    <None Include="model.fragment.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -35,7 +37,7 @@
     <ClCompile Include="stb_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
+    <ClCompile Include="FileTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -46,10 +48,19 @@
     <ClInclude Include="stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
+    <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CarCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

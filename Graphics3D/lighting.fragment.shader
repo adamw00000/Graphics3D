@@ -1,4 +1,7 @@
-#version 330 corein vec3 Normal; in vec3 FragPos; in vec2 TexCoords;
+#version 330 core
+in vec3 Normal; 
+in vec3 FragPos; 
+in vec2 TexCoords;
 
 struct DirLight {
 	vec3 direction;
@@ -47,7 +50,8 @@ struct Material {
 uniform Material material;
 
 uniform vec3 objectColor;
-uniform vec3 viewPos;
+uniform vec3 viewPos;
+
 out vec4 FragColor;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
@@ -133,12 +137,14 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 	// combine results
 	vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
 	vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
-	vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+	vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+
 	ambient *= attenuation;
 	diffuse *= attenuation;
 	specular *= attenuation;
 
 	diffuse *= intensity;
-	specular *= intensity;
+	specular *= intensity;
+
 	return (ambient + diffuse + specular);
 }
