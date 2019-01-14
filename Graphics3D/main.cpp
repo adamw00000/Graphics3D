@@ -85,7 +85,7 @@ int main()
 	// load models
 	// -----------
 	//Model ourModel("Models/Cars/Low_Poly_City_Cars.obj");
-	Model carModel("Models/Mustang_GT/3D Files/OBJ/mustang_GT.obj");
+	Model carModel("Models/Mustang/mustang_GT.obj");
 	//Model ourModel("Models/Mercedes/Mercedes-Benz CL600 2007 OBJ.obj");
 	//Model ourModel("Models/nanosuit/nanosuit.obj");
 	carModel.position = glm::vec3(8.8f, -1.77f, 0.0f);
