@@ -146,6 +146,7 @@ class Model
 	}
 
 public:
+	float rotation;
 	glm::vec3 position;
 	/* Functions */
 	Model(const char *path)

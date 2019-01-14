@@ -10,19 +10,25 @@
 #include "Model.h"
 
 #include <iostream>
+#include <cmath>
+
+#define NUM_CAMERAS 2
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+Camera GetCamera();
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, -1.0f, 3.0f));
+Camera fpsCamera(glm::vec3(0.0f, -1.0f, 3.0f));
+Camera carCamera(glm::vec3(0.0f, -1.0f, 3.0f)); 
 float lastX = SCR_WIDTH / 2.0f;
+int cameraId = 1;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
@@ -79,10 +85,11 @@ int main()
 	// load models
 	// -----------
 	//Model ourModel("Models/Cars/Low_Poly_City_Cars.obj");
-	Model ourModel("Models/Mustang_GT/3D Files/OBJ/mustang_GT.obj");
+	Model carModel("Models/Mustang_GT/3D Files/OBJ/mustang_GT.obj");
 	//Model ourModel("Models/Mercedes/Mercedes-Benz CL600 2007 OBJ.obj");
 	//Model ourModel("Models/nanosuit/nanosuit.obj");
-	ourModel.position = glm::vec3(8.8f, -1.77f, 0.0f);
+	carModel.position = glm::vec3(8.8f, -1.77f, 0.0f);
+	carModel.rotation = -12.0f;
 
 	//Model streetModel("Models/Street environment/Street environment_V01.obj");
 	//Model streetModel("Models/city/gmae.obj");
@@ -94,11 +101,15 @@ int main()
 	// draw in wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+	carCamera.SetYawPitch(-90.0f - carModel.rotation, -20);
+	//carCamera.SetYawPitch(-90.0f, -20);
 
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
 	{
+		//carModel.position.z -= 0.01f;
+
 		// per-frame time logic
 		// --------------------
 		float currentFrame = (float)glfwGetTime();
@@ -113,6 +124,21 @@ int main()
 		// ------
 		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//camera
+		glm::mat4 transform1 = glm::mat4(1.0f);
+		transform1 = glm::rotate(transform1, glm::radians(carModel.rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 transform2 = glm::mat4(1.0f);
+		transform2 = glm::translate(transform2, carModel.position);
+		glm::mat4 transform3 = glm::mat4(1.0f);
+		transform3 = glm::rotate(transform3, glm::radians(-20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		float distance = 1.0f;
+		glm::vec4 distanceVector = transform3 * transform1 * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+		glm::vec3 cameraPosition = carModel.position + glm::vec3(distanceVector);
+
+		carCamera.Position = cameraPosition;
+
+		Camera camera = GetCamera();
 
 		// don't forget to enable shader before setting uniforms
 		ourShader.use();
@@ -145,18 +171,18 @@ int main()
 
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, ourModel.position); // translate it down so it's at the center of the scene
+		model = glm::translate(model, carModel.position); // translate it down so it's at the center of the scene
 		//model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
 		//model = glm::scale(model, glm::vec3(0.02f, 0.02f, 0.02f));	// it's a bit too big for our scene, so scale it down
 		model = glm::scale(model, glm::vec3(0.007f, 0.007f, 0.007f));	// it's a bit too big for our scene, so scale it down
 		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));	// rotation
-		model = glm::rotate(model, glm::radians(-12.0f), glm::vec3(0.0f, 0.0f, 1.0f));	// rotation
+		model = glm::rotate(model, glm::radians(carModel.rotation), glm::vec3(0.0f, 0.0f, 1.0f));	// rotation
 		ourShader.setMat4("model", model);
 
 		glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model)));
 		ourShader.setMat3("normalMatrix", model);
 
-		ourModel.Draw(ourShader);
+		carModel.Draw(ourShader);
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
@@ -188,14 +214,29 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime);
+	if (cameraId == 0)
+	{
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			fpsCamera.ProcessKeyboard(FORWARD, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			fpsCamera.ProcessKeyboard(BACKWARD, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			fpsCamera.ProcessKeyboard(LEFT, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			fpsCamera.ProcessKeyboard(RIGHT, deltaTime);
+	}
+
+	static int cKeyState = GLFW_RELEASE;
+
+	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS && cKeyState == GLFW_RELEASE)
+	{
+		cKeyState = GLFW_PRESS;
+		cameraId = (cameraId + 1) % NUM_CAMERAS;
+	}
+	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_RELEASE)
+	{
+		cKeyState = GLFW_RELEASE;
+	}
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -211,6 +252,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
+	if (cameraId != 0)
+		return;
 	if (firstMouse)
 	{
 		lastX = (float)xpos;
@@ -224,12 +267,26 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	lastX = (float)xpos;
 	lastY = (float)ypos;
 
-	camera.ProcessMouseMovement(xoffset, yoffset);
+	fpsCamera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll((float)yoffset);
+	if (cameraId != 0)
+		return;
+	fpsCamera.ProcessMouseScroll((float)yoffset);
+}
+
+Camera GetCamera()
+{
+	if (cameraId == 0)
+	{
+		return fpsCamera;
+	}
+	else if (cameraId == 1)
+	{
+		return carCamera;
+	}
 }

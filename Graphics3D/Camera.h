@@ -113,6 +113,18 @@ public:
 			Zoom = 45.0f;
 	}
 
+	void SetYawPitch(float yaw, float pitch)
+	{
+		Yaw = yaw;
+
+		if (Pitch > 89.0f)
+			Pitch = 89.0f;
+		if (Pitch < -89.0f)
+			Pitch = -89.0f;
+		Pitch = pitch;
+
+		updateCameraVectors();
+	}
 private:
 	// Calculates the front vector from the Camera's (updated) Euler Angles
 	void updateCameraVectors()
