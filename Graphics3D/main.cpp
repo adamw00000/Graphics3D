@@ -81,6 +81,46 @@ int main()
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
 
+	float vertices[] = {
+		// positions          // normals           // texture coords
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
+	};
+
 	// build and compile shaders
 	// -------------------------
 	Shader ourShader("model.vertex.shader", "model.fragment.shader");
@@ -105,6 +145,21 @@ int main()
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	//carCamera.SetYawPitch(-90.0f, -20);
+
+	Shader lampShader("lamp.vertex.shader", "lamp.fragment.shader");
+
+	unsigned int VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	unsigned int lightVAO;
+	glGenVertexArrays(1, &lightVAO);
+	glBindVertexArray(lightVAO);
+	// we only need to bind to the VBO (to link it with glVertexAttribPointer), no need to fill it; the VBO's data already contains all we need (it's already bound, but we do it again for educational purposes)
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 
 	// render loop
 	// -----------
@@ -164,16 +219,46 @@ int main()
 		ourShader.setMat3("normalMatrix", fixedCarModelMatrix);
 
 		// camera
-		carCamera.SetCarPosition(carModel.position, carModel.rotation);
+		//carCamera.SetCarPosition(carModel.position, carModel.rotation);
 		carCamera.SetCarPosition(carModel.position, carModelMatrix);
 		AbstractCamera* camera = GetCamera();
-		ourShader.setVec3("viewPos", camera->Position);
 
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera->Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera->GetViewMatrix();
 		ourShader.setMat4("projection", projection);
 		ourShader.setMat4("view", view);
+
+		ourShader.setVec3("viewPos", camera->Position);
+
+		//glm::vec3 spotlightPos = glm::vec3(carModelMatrix * glm::vec4(0.0f, 0.15f, -0.3f, 1.0f));
+		//glm::vec3 spotlightPos = glm::vec3(carModelMatrix * glm::vec4(-0.1f, 0.112f, -0.28f, 1.0f));
+		glm::vec3 spotlightPos1 = glm::vec3(carModelMatrix * glm::vec4(0.1f, 0.112f, -0.285f, 1.0f));
+		glm::vec3 spotlightDir = glm::vec3(carModelMatrix * glm::vec4(0.0f, -0.1f, -1.0f, 0.0f));//-glm::normalize(camera->Position - carModel.position);
+
+		ourShader.setVec3("spotLights[0].position", spotlightPos1);
+		ourShader.setVec3("spotLights[0].direction", spotlightDir);
+		ourShader.setFloat("spotLights[0].cutOff", glm::cos(glm::radians(30.0f)));
+		ourShader.setFloat("spotLights[0].outerCutOff", glm::cos(glm::radians(45.0f)));
+		ourShader.setVec3("spotLights[0].ambient", 0.2f, 0.2f, 0.2f);
+		ourShader.setVec3("spotLights[0].diffuse", 0.5f, 0.5f, 0.5f);
+		ourShader.setVec3("spotLights[0].specular", 1.0f, 1.0f, 1.0f);
+		ourShader.setFloat("spotLights[0].constant", 1.0f);
+		ourShader.setFloat("spotLights[0].linear", 0.09f);
+		ourShader.setFloat("spotLights[0].quadratic", 0.032f);
+
+		glm::vec3 spotlightPos2 = glm::vec3(carModelMatrix * glm::vec4(-0.1f, 0.112f, -0.28f, 1.0f));
+
+		ourShader.setVec3("spotLights[1].position", spotlightPos2);
+		ourShader.setVec3("spotLights[1].direction", spotlightDir);
+		ourShader.setFloat("spotLights[1].cutOff", glm::cos(glm::radians(30.0f)));
+		ourShader.setFloat("spotLights[1].outerCutOff", glm::cos(glm::radians(45.0f)));
+		ourShader.setVec3("spotLights[1].ambient", 0.2f, 0.2f, 0.2f);
+		ourShader.setVec3("spotLights[1].diffuse", 0.5f, 0.5f, 0.5f);
+		ourShader.setVec3("spotLights[1].specular", 1.0f, 1.0f, 1.0f);
+		ourShader.setFloat("spotLights[1].constant", 1.0f);
+		ourShader.setFloat("spotLights[1].linear", 0.09f);
+		ourShader.setFloat("spotLights[1].quadratic", 0.032f);
 
 		carModel.Draw(ourShader);
 
@@ -189,6 +274,27 @@ int main()
 		ourShader.setVec3("dirLight.specular", 1.0f, 1.0f, 1.0f);
 
 		streetModel.Draw(ourShader);
+
+		lampShader.use();
+		lampShader.setMat4("projection", projection);
+		lampShader.setMat4("view", view);
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, spotlightPos1);
+		model = glm::rotate(model, glm::radians(carModel.rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.02f)); // a smaller cube
+		lampShader.setMat4("model", model);
+
+		glBindVertexArray(lightVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, spotlightPos2);
+		model = glm::rotate(model, glm::radians(carModel.rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.02f)); // a smaller cube
+		lampShader.setMat4("model", model);
+
+		glBindVertexArray(lightVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------

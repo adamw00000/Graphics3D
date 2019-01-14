@@ -40,7 +40,8 @@ struct SpotLight {
 	float linear;
 	float quadratic;
 };
-uniform SpotLight spotLight;
+#define NR_SPOT_LIGHTS 2
+uniform SpotLight spotLights[NR_SPOT_LIGHTS];
 
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
@@ -58,8 +59,10 @@ void main()
 	vec3 norm = normalize(Normal);
 	vec3 viewDir = normalize(viewPos - FragPos);
 
+	vec3 result;
 	// phase 1: Directional lighting
-	vec3 result = CalcDirLight(dirLight, norm, viewDir);
+	//vec3 result = CalcDirLight(dirLight, norm, viewDir);
+	result += CalcDirLight(dirLight, norm, viewDir);
 
 	//// phase 2: Point lights
 	//for (int i = 0; i < NR_POINT_LIGHTS; i++)
@@ -67,6 +70,8 @@ void main()
 
 	// phase 3: Spot light
 	//result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
+	for (int i = 0; i < NR_SPOT_LIGHTS; i++)
+		result += CalcSpotLight(spotLights[i], norm, FragPos, viewDir);
 
 	FragColor = vec4(result, 1.0);
 	//FragColor = texture(texture_diffuse1, TexCoords);

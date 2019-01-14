@@ -176,7 +176,7 @@ public:
 		glm::mat4 transform2 = glm::mat4(1.0f);
 		transform2 = glm::translate(transform2, pos);
 		glm::mat4 transform3 = glm::mat4(1.0f);
-		transform3 = glm::rotate(transform3, glm::radians(-20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		transform3 = glm::rotate(transform3, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		float distance = 1.0f;
 		glm::vec4 distanceVector = transform1 * transform3 * glm::vec4(0.0f, 0.0f, distance, 1.0f);
 		Position = pos + glm::vec3(distanceVector);
