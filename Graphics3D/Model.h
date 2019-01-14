@@ -149,6 +149,8 @@ public:
 	float rotation;
 	glm::vec3 position;
 	/* Functions */
+	Model() { }
+
 	Model(const char *path)
 	{
 		loadModel(path);
