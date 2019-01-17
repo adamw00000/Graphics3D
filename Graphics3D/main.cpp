@@ -52,6 +52,9 @@ glm::vec4 blackishColor(0.05f, 0.05f, 0.05f, 1.0f);
 //day/night
 bool enableNight = false;
 
+//reflectors
+float reflectorHeight = -0.1f;
+
 int main()
 {
 	// glfw: initialize and configure
@@ -166,6 +169,9 @@ int main()
 	//Model streetModel("Models/city/gmae.obj");
 	//Model streetModel("Models/metro/Metro_1.3ds");
 	Model streetModel("Models/Track01/track01_.3ds");
+
+
+	Model otherModel = Model("Models/Cup/Coffee_Cup.obj");
 	//Model streetModel("Models/Camellia City/OBJ/Camellia City.obj");
 
 	// draw in wireframe
@@ -265,13 +271,13 @@ int main()
 
 		//glm::vec3 spotlightPos = glm::vec3(carModelMatrix * glm::vec4(0.0f, 0.15f, -0.3f, 1.0f));
 		//glm::vec3 spotlightPos = glm::vec3(carModelMatrix * glm::vec4(-0.1f, 0.112f, -0.28f, 1.0f));
+		glm::vec3 spotlightDir = glm::vec3(carModelMatrix * glm::vec4(0.0f, reflectorHeight, -1.0f, 0.0f));//-glm::normalize(camera->Position - carModel.position);
 		glm::vec3 spotlightPos1 = glm::vec3(carModelMatrix * glm::vec4(0.1f, 0.112f, -0.285f, 1.0f));
-		glm::vec3 spotlightDir = glm::vec3(carModelMatrix * glm::vec4(0.0f, -0.1f, -1.0f, 0.0f));//-glm::normalize(camera->Position - carModel.position);
 
 		ourShader.setVec3("spotLights[0].position", spotlightPos1);
 		ourShader.setVec3("spotLights[0].direction", spotlightDir);
-		ourShader.setFloat("spotLights[0].cutOff", glm::cos(glm::radians(30.0f)));
-		ourShader.setFloat("spotLights[0].outerCutOff", glm::cos(glm::radians(45.0f)));
+		ourShader.setFloat("spotLights[0].cutOff", glm::cos(glm::radians(20.0f)));
+		ourShader.setFloat("spotLights[0].outerCutOff", glm::cos(glm::radians(30.0f)));
 		ourShader.setVec3("spotLights[0].ambient", 0.2f, 0.2f, 0.2f);
 		ourShader.setVec3("spotLights[0].diffuse", 0.5f, 0.5f, 0.5f);
 		ourShader.setVec3("spotLights[0].specular", 1.0f, 1.0f, 1.0f);
@@ -283,8 +289,8 @@ int main()
 
 		ourShader.setVec3("spotLights[1].position", spotlightPos2);
 		ourShader.setVec3("spotLights[1].direction", spotlightDir);
-		ourShader.setFloat("spotLights[1].cutOff", glm::cos(glm::radians(30.0f)));
-		ourShader.setFloat("spotLights[1].outerCutOff", glm::cos(glm::radians(45.0f)));
+		ourShader.setFloat("spotLights[1].cutOff", glm::cos(glm::radians(20.0f)));
+		ourShader.setFloat("spotLights[1].outerCutOff", glm::cos(glm::radians(30.0f)));
 		ourShader.setVec3("spotLights[1].ambient", 0.2f, 0.2f, 0.2f);
 		ourShader.setVec3("spotLights[1].diffuse", 0.5f, 0.5f, 0.5f);
 		ourShader.setVec3("spotLights[1].specular", 1.0f, 1.0f, 1.0f);
@@ -301,11 +307,23 @@ int main()
 		streetModelMatrix = glm::rotate(streetModelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));	// rotation
 		ourShader.setMat4("model", streetModelMatrix);
 
+		glm::mat3 normalStreetMatrix = glm::transpose(glm::inverse(glm::mat3(streetModelMatrix)));
+		ourShader.setMat3("normalMatrix", normalStreetMatrix);
+
 		ourShader.setVec3("dirLight.ambient", 0.5f, 0.5f, 0.5f);
 		ourShader.setVec3("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
 		ourShader.setVec3("dirLight.specular", 1.0f, 1.0f, 1.0f);
 
 		streetModel.Draw(ourShader);
+
+		glm::mat4 otherModelMatrix = glm::mat4(1.0f);
+		otherModelMatrix = glm::translate(otherModelMatrix, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+		//otherModelMatrix = glm::scale(otherModelMatrix, glm::vec3(0.02f, 0.02f, 0.02f));	// it's a bit too big for our scene, so scale it down
+		ourShader.setMat4("model", otherModelMatrix);
+
+		glm::mat3 normalOtherMatrix = glm::transpose(glm::inverse(glm::mat3(otherModelMatrix)));
+		ourShader.setMat3("normalMatrix", normalOtherMatrix);
+		otherModel.Draw(ourShader);
 
 		lampShader.use();
 		lampShader.setMat4("projection", projection);
@@ -413,6 +431,11 @@ void processInput(GLFWwindow *window)
 	{
 		nKeyState = GLFW_RELEASE;
 	}
+
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+		reflectorHeight = min(max(reflectorHeight + 0.01f, -0.2f), 0.0f);
+	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+		reflectorHeight = min(max(reflectorHeight - 0.01f, -0.2f), 0.0f);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
