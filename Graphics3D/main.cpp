@@ -368,6 +368,7 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	const float MovementSpeed = 2.5f;
+	const float RotateSpeed = 50.0f;
 
 	glm::mat4 transform1 = glm::mat4(1.0f);
 	transform1 = glm::rotate(transform1, glm::radians(carModel.rotation), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -377,15 +378,16 @@ void processInput(GLFWwindow *window)
 	glm::vec3 Front = glm::vec3(transform1 * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
 
 	float velocity = MovementSpeed * deltaTime;
+	float rotateVelocity = RotateSpeed * deltaTime;
 
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 		carModel.position += Front * velocity;
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		carModel.position -= Front * velocity;
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-		carModel.rotation += 1.0f;
+		carModel.rotation += rotateVelocity;
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-		carModel.rotation -= 1.0f;
+		carModel.rotation -= rotateVelocity;
 
 	if (cameraId == 0)
 	{
