@@ -238,7 +238,7 @@ public:
 	// Camera Attributes
 
 	glm::vec3 carPosition;
-	const glm::vec3 CameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
+	const glm::vec3 CameraUp = glm::vec3(0.0f, 1.0f, 1.0f);
 
 	// Constructor with vectors
 	StaticFollowCamera(glm::vec3 position)

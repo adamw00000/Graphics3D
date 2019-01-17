@@ -40,11 +40,13 @@ struct SpotLight {
 	float linear;
 	float quadratic;
 };
-#define NR_SPOT_LIGHTS 2
+#define NR_SPOT_LIGHTS 6
 uniform SpotLight spotLights[NR_SPOT_LIGHTS];
 
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
+uniform float texture_diffuse1_shininess;
+uniform float texture_specular1_shininess;
 uniform vec3 viewPos;
 
 //fog
@@ -121,7 +123,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
 	float diff = max(dot(normal, lightDir), 0.0);
 	// specular shading
 	vec3 reflectDir = reflect(-lightDir, normal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), texture_diffuse1_shininess);
 	// combine results
 	vec3 ambient = light.ambient * vec3(texture(texture_diffuse1, TexCoords));
 	vec3 diffuse = light.diffuse * diff * vec3(texture(texture_diffuse1, TexCoords));
@@ -136,7 +138,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 	float diff = max(dot(normal, lightDir), 0.0);
 	// specular shading
 	vec3 reflectDir = reflect(-lightDir, normal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), texture_diffuse1_shininess);
 	// attenuation
 	float distance = length(light.position - fragPos);
 	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
@@ -161,7 +163,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 
 	// specular
 	vec3 reflectDir = reflect(-lightDir, normal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), texture_diffuse1_shininess);
 
 	//attenuation
 	float distance = length(light.position - FragPos);
@@ -177,7 +179,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 	vec3 diffuse = light.diffuse * diff * vec3(texture(texture_diffuse1, TexCoords));
 	vec3 specular = light.specular * spec * vec3(texture(texture_specular1, TexCoords));
 
-	ambient *= attenuation;
+	ambient *= attenuation * 0;
 	diffuse *= attenuation;
 	specular *= attenuation;
 

@@ -13,6 +13,7 @@
 #include <cmath>
 
 #define NUM_CAMERAS 4
+#define NUM_LIGHT_POLES 4
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -51,6 +52,22 @@ float fogDensity = 0.5f;
 glm::vec4 fogColor(0.5f, 0.5f, 0.5f, 1.0f);
 glm::vec4 blueishColor(196.0f / 256.0f, 220.0f / 256.0f, 229.0f / 256.0f, 1.0f);
 glm::vec4 blackishColor(0.05f, 0.05f, 0.05f, 1.0f);
+
+glm::vec3 lightPolePositions[]
+{
+	glm::vec3(9.25f, -1.17f, 0.0f),
+	glm::vec3(0, -1.17f, 11.1f),
+	glm::vec3(-9.0f, -1.17f, 0.0f),
+	glm::vec3(0, -1.17f, -11.1f),
+};
+
+float lightPoleRotations[]
+{
+	80.0f,
+	0.0f,
+	-120.0f,
+	180.0f
+};
 
 //day/night
 bool enableNight = false;
@@ -175,6 +192,8 @@ int main()
 
 
 	Model otherModel = Model("Models/Cup/Coffee_Cup.obj");
+
+	Model lightPoleModel = Model("Models/Light Pole/Light Pole.obj");
 	//Model streetModel("Models/Camellia City/OBJ/Camellia City.obj");
 
 	// draw in wireframe
@@ -183,6 +202,10 @@ int main()
 	//carCamera.SetYawPitch(-90.0f, -20);
 
 	Shader lampShader("lamp.vertex.shader", "lamp.fragment.shader");
+	lampShader.use();
+	lampShader.setFloat("fogDensity", fogDensity * 1 / 2
+	);
+	lampShader.setVec4("fogColor", fogColor);
 
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
@@ -222,6 +245,10 @@ int main()
 		//camera
 
 		// don't forget to enable shader before setting uniforms
+		lampShader.use();
+
+		lampShader.setBool("enableFog", enableFog);
+
 		ourShader.use();
 
 		ourShader.setBool("enableFog", enableFog);
@@ -271,6 +298,63 @@ int main()
 		ourShader.setMat4("view", view);
 
 		ourShader.setVec3("viewPos", camera->Position);
+		lampShader.use();
+		lampShader.setVec3("viewPos", camera->Position);
+		ourShader.use();
+
+		for (int i = 0; i < NUM_LIGHT_POLES; i++)
+		{
+			ourShader.use();
+			glm::mat4 lightPoleModelMatrix = glm::mat4(1.0f);
+			lightPoleModelMatrix = glm::translate(lightPoleModelMatrix, lightPolePositions[i]); // translate it down so it's at the center of the scene
+			lightPoleModelMatrix = glm::rotate(lightPoleModelMatrix, glm::radians(lightPoleRotations[i]), glm::vec3(0.0f, 1.0f, 0.0f));	// rotation
+			lightPoleModelMatrix = glm::scale(lightPoleModelMatrix, glm::vec3(0.05f));	// it's a bit too big for our scene, so scale it down
+			ourShader.setMat4("model", lightPoleModelMatrix);
+
+			glm::mat3 normalLightPoleMatrix = glm::transpose(glm::inverse(glm::mat3(lightPoleModelMatrix)));
+			ourShader.setMat3("normalMatrix", normalLightPoleMatrix);
+			glm::vec3 lightPos = glm::vec3(lightPoleModelMatrix * glm::vec4(0.0f, 11.0f, -6.0f, 1.0f));
+			ourShader.setVec3(std::string("spotLights[").append(std::to_string(i + 2)) + "].position", lightPos);
+			ourShader.setVec3(std::string("spotLights[").append(std::to_string(i + 2)) + "].direction", glm::vec3(0.0f, -10.0f, 0.0f));
+			ourShader.setFloat(std::string("spotLights[").append(std::to_string(i + 2)) + "].cutOff", glm::cos(glm::radians(45.0f)));
+			ourShader.setFloat(std::string("spotLights[").append(std::to_string(i + 2)) + "].outerCutOff", glm::cos(glm::radians(90.0f)));
+			ourShader.setVec3(std::string("spotLights[").append(std::to_string(i + 2)) + "].ambient", 0.2f, 0.2f, 0.2f);
+			ourShader.setVec3(std::string("spotLights[").append(std::to_string(i + 2)) + "].diffuse", 0.5f, 0.5f, 0.5f);
+			ourShader.setVec3(std::string("spotLights[").append(std::to_string(i + 2)) + "].specular", 1.0f, 1.0f, 1.0f);
+			ourShader.setFloat(std::string("spotLights[").append(std::to_string(i + 2)) + "].constant", 1.0f);
+			ourShader.setFloat(std::string("spotLights[").append(std::to_string(i + 2)) + "].linear", 0.045f);
+			ourShader.setFloat(std::string("spotLights[").append(std::to_string(i + 2)) + "].quadratic", 0.0075f);
+
+			lampShader.use();
+			lampShader.setMat4("projection", projection);
+			lampShader.setMat4("view", view);
+			glm::mat4 cubemodel = glm::mat4(1.0f);
+			cubemodel = glm::translate(cubemodel, lightPos);
+			cubemodel = glm::scale(cubemodel, glm::vec3(0.1f)); // a smaller cube
+			lampShader.setMat4("model", cubemodel);
+
+			glBindVertexArray(lightVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		for (int i = 0; i < NUM_LIGHT_POLES; i++)
+		{
+			ourShader.use();
+			glm::mat4 lightPoleModelMatrix = glm::mat4(1.0f);
+			lightPoleModelMatrix = glm::translate(lightPoleModelMatrix, lightPolePositions[i]); // translate it down so it's at the center of the scene
+			lightPoleModelMatrix = glm::rotate(lightPoleModelMatrix, glm::radians(lightPoleRotations[i]), glm::vec3(0.0f, 1.0f, 0.0f));	// rotation
+			lightPoleModelMatrix = glm::scale(lightPoleModelMatrix, glm::vec3(0.05f));	// it's a bit too big for our scene, so scale it down
+			ourShader.setMat4("model", lightPoleModelMatrix);
+
+			glm::mat3 normalLightPoleMatrix = glm::transpose(glm::inverse(glm::mat3(lightPoleModelMatrix)));
+			ourShader.setMat3("normalMatrix", normalLightPoleMatrix);
+
+			lightPoleModel.Draw(ourShader);
+		}
+
+		ourShader.setMat4("model", fixedCarModelMatrix);
+		ourShader.setMat3("normalMatrix", fixedCarModelMatrix);
+
+		ourShader.use();
 
 		//glm::vec3 spotlightPos = glm::vec3(carModelMatrix * glm::vec4(0.0f, 0.15f, -0.3f, 1.0f));
 		//glm::vec3 spotlightPos = glm::vec3(carModelMatrix * glm::vec4(-0.1f, 0.112f, -0.28f, 1.0f));
@@ -327,6 +411,7 @@ int main()
 		glm::mat3 normalOtherMatrix = glm::transpose(glm::inverse(glm::mat3(otherModelMatrix)));
 		ourShader.setMat3("normalMatrix", normalOtherMatrix);
 		otherModel.Draw(ourShader);
+
 
 		lampShader.use();
 		lampShader.setMat4("projection", projection);

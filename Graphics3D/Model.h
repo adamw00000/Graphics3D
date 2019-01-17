@@ -106,9 +106,26 @@ class Model
 		if (mesh->mMaterialIndex >= 0)
 		{
 			aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
+
+			ai_real shininess;
+			aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &shininess);
+
+			if (shininess == 0)
+			{
+				shininess = 8;
+			}
+
 			vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+			for (size_t i = 0; i < diffuseMaps.size(); i++)
+			{
+				diffuseMaps[i].shininess = shininess;
+			}
 			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+			for (size_t i = 0; i < specularMaps.size(); i++)
+			{
+				specularMaps[i].shininess = shininess;
+			}
 			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 		}
 

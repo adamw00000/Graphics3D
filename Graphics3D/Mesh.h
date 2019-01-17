@@ -36,6 +36,7 @@ struct Texture {
 	unsigned int id;
 	string type;
 	aiString path; // we store the path of the texture to compare with other textures
+	float shininess;
 };
 
 
@@ -86,6 +87,8 @@ public:
 			glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
 			// and finally bind the texture
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
+
+			glUniform1f(glGetUniformLocation(shader.ID, (name + number + "_shininess").c_str()), textures[i].shininess);
 		}
 
 		// draw mesh
