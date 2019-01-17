@@ -12,7 +12,7 @@
 #include <iostream>
 #include <cmath>
 
-#define NUM_CAMERAS 2
+#define NUM_CAMERAS 4
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -26,7 +26,10 @@ const unsigned int SCR_HEIGHT = 600;
 
 // camera
 Camera fpsCamera(glm::vec3(0.0f, -1.0f, 3.0f));
-CarCamera carCamera; 
+CarCamera carCamera;
+StaticCamera staticCamera(glm::vec3(0.0f, 30.0f, 0.0f));
+StaticFollowCamera staticFollowCamera(glm::vec3(0.0f, 30.0f, 0.0f));
+AbstractCamera* cameras[]{ &fpsCamera, &carCamera, &staticCamera, &staticFollowCamera };
 
 Model carModel;
 
@@ -38,6 +41,12 @@ bool firstMouse = true;
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+//fog
+bool enableFog = false;
+float fogDensity = 0.5f;
+glm::vec4 fogColor(0.5f, 0.5f, 0.5f, 1.0f);
+glm::vec4 blackishColor(0.05f, 0.05f, 0.05f, 1.0f);
 
 int main()
 {
@@ -80,6 +89,16 @@ int main()
 	// configure global opengl state
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
+
+	////configure fog
+
+	//GLfloat density = 0.3;
+	//GLfloat fogColor[4] = { 0.5, 0.5, 0.5, 1.0 };
+	//glEnable(GL_FOG);
+	//glFogi(GL_FOG_MODE, GL_EXP2);
+	//glFogfv(GL_FOG_COLOR, fogColor);
+	//glFogf(GL_FOG_DENSITY, density);
+	//glHint(GL_FOG_HINT, GL_NICEST);
 
 	float vertices[] = {
 		// positions          // normals           // texture coords
@@ -124,6 +143,10 @@ int main()
 	// build and compile shaders
 	// -------------------------
 	Shader ourShader("model.vertex.shader", "model.fragment.shader");
+	ourShader.use();
+
+	ourShader.setFloat("fogDensity", fogDensity);
+	ourShader.setVec4("fogColor", fogColor);
 
 	// load models
 	// -----------
@@ -165,6 +188,7 @@ int main()
 	// -----------
 	while (!glfwWindowShouldClose(window))
 	{
+		glm::vec4 clearColor = enableFog ? fogColor : blackishColor;
 		//carCamera.SetYawPitch(-90.0f - carModel.rotation, -20);
 
 		// per-frame time logic
@@ -179,13 +203,15 @@ int main()
 
 		// render
 		// ------
-		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+		glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//camera
 
 		// don't forget to enable shader before setting uniforms
 		ourShader.use();
+
+		ourShader.setBool("enableFog", enableFog);
 		
 		//spotlight + attenuation
 		//ourShader.setVec3("spotLight.position", camera->Position);
@@ -221,6 +247,7 @@ int main()
 		// camera
 		//carCamera.SetCarPosition(carModel.position, carModel.rotation);
 		carCamera.SetCarPosition(carModel.position, carModelMatrix);
+		staticFollowCamera.SetCarPosition(carModel.position, carModelMatrix);
 		AbstractCamera* camera = GetCamera();
 
 		// view/projection transformations
@@ -357,6 +384,18 @@ void processInput(GLFWwindow *window)
 	{
 		cKeyState = GLFW_RELEASE;
 	}
+
+	static int fKeyState = GLFW_RELEASE;
+
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && fKeyState == GLFW_RELEASE)
+	{
+		fKeyState = GLFW_PRESS;
+		enableFog = !enableFog;
+	}
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_RELEASE)
+	{
+		fKeyState = GLFW_RELEASE;
+	}
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -406,13 +445,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 AbstractCamera* GetCamera()
 {
-	if (cameraId == 0)
+	if (cameraId < NUM_CAMERAS && cameraId >= 0)
 	{
-		return &fpsCamera;
-	}
-	else if (cameraId == 1)
-	{
-		return &carCamera;
+		return cameras[cameraId];
 	}
 	return nullptr;
 }

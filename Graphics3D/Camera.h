@@ -46,7 +46,6 @@ class Camera: public AbstractCamera
 {
 public:
 	// Camera Attributes
-	glm::vec3 Position;
 	glm::vec3 Front;
 	glm::vec3 Up;
 	glm::vec3 Right;
@@ -57,24 +56,25 @@ public:
 	// Camera options
 	float MovementSpeed;
 	float MouseSensitivity;
-	float Zoom;
 
 	// Constructor with vectors
-	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY)
 	{
 		Position = position;
 		WorldUp = up;
 		Yaw = yaw;
 		Pitch = pitch;
+		Zoom = ZOOM;
 		updateCameraVectors();
 	}
 	// Constructor with scalar values
-	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY)
 	{
 		Position = glm::vec3(posX, posY, posZ);
 		WorldUp = glm::vec3(upX, upY, upZ);
 		Yaw = yaw;
 		Pitch = pitch;
+		Zoom = ZOOM;
 		updateCameraVectors();
 	}
 
@@ -157,7 +157,6 @@ public:
 	const float distance = 1.0f;
 	const float height = 0.3f;
 
-	glm::vec3 Position;
 	glm::vec3 carPosition;
 	const glm::vec3 WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -168,24 +167,9 @@ public:
 		carPosition = glm::vec3(0.0f, 0.0f, -2.0f);
 	}
 
-	void SetCarPosition(glm::vec3 pos, float rot)
-	{
-		carPosition = pos;
-		glm::mat4 transform1 = glm::mat4(1.0f);
-		transform1 = glm::rotate(transform1, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 transform2 = glm::mat4(1.0f);
-		transform2 = glm::translate(transform2, pos);
-		glm::mat4 transform3 = glm::mat4(1.0f);
-		transform3 = glm::rotate(transform3, glm::radians(-30.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		float distance = 1.0f;
-		glm::vec4 distanceVector = transform1 * transform3 * glm::vec4(0.0f, 0.0f, distance, 1.0f);
-		Position = pos + glm::vec3(distanceVector);
-	}
-
 	void SetCarPosition(glm::vec3 carPos, glm::mat4 carModelMatrix)
 	{
 		carPosition = carPos;
-
 		glm::vec4 distanceVector = glm::vec4(0.0f, height, distance, 1.0f);
 
 		Position = glm::vec3(carModelMatrix * distanceVector);
@@ -195,6 +179,51 @@ public:
 	glm::mat4 GetViewMatrix()
 	{
 		return glm::lookAt(Position, carPosition, WorldUp);
+	}
+};
+
+class StaticCamera : public AbstractCamera
+{
+public:
+	// Camera Attributes
+	const glm::vec3 CameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
+
+	// Constructor with vectors
+	StaticCamera(glm::vec3 position)
+	{
+		Position = position;
+	}
+
+	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
+	glm::mat4 GetViewMatrix()
+	{
+		return glm::lookAt(Position, glm::vec3(0.0f, 0.0f, 0.0f), CameraUp);
+	}
+};
+
+class StaticFollowCamera : public AbstractCamera
+{
+public:
+	// Camera Attributes
+
+	glm::vec3 carPosition;
+	const glm::vec3 CameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
+
+	// Constructor with vectors
+	StaticFollowCamera(glm::vec3 position)
+	{
+		Position = position;
+	}
+
+	void SetCarPosition(glm::vec3 carPos, glm::mat4 carModelMatrix)
+	{
+		carPosition = carPos;
+	}
+
+	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
+	glm::mat4 GetViewMatrix()
+	{
+		return glm::lookAt(Position, carPosition, CameraUp);
 	}
 };
 #endif

@@ -47,11 +47,16 @@ uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
 uniform vec3 viewPos;
 
+uniform bool enableFog;
+uniform vec4 fogColor;
+uniform float fogDensity;
+
 out vec4 FragColor;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
+float CalcFogFactor(vec3 fragPos, vec3 viewPos);
 
 void main()
 {
@@ -62,7 +67,14 @@ void main()
 	vec3 result;
 	// phase 1: Directional lighting
 	//vec3 result = CalcDirLight(dirLight, norm, viewDir);
-	result += CalcDirLight(dirLight, norm, viewDir);
+	DirLight localDirLight = dirLight;
+	if (enableFog)
+	{
+		localDirLight.ambient /= 2;
+		localDirLight.diffuse /= 2;
+		localDirLight.specular /= 2;
+	}
+	//result += CalcDirLight(localDirLight, norm, viewDir);
 
 	//// phase 2: Point lights
 	//for (int i = 0; i < NR_POINT_LIGHTS; i++)
@@ -73,8 +85,23 @@ void main()
 	for (int i = 0; i < NR_SPOT_LIGHTS; i++)
 		result += CalcSpotLight(spotLights[i], norm, FragPos, viewDir);
 
-	FragColor = vec4(result, 1.0);
+	if (!enableFog)
+		FragColor = vec4(result, 1.0);
+	else
+	{
+		float fogFactor = CalcFogFactor(FragPos, viewPos);
+		FragColor = mix(fogColor, vec4(result, 1.0), fogFactor);
+	}
 	//FragColor = texture(texture_diffuse1, TexCoords);
+}
+
+float CalcFogFactor(vec3 fragPos, vec3 viewPos)
+{
+	float dist = distance(viewPos, fragPos);
+	float fogFactor = 1.0 / exp((dist * fogDensity)* (dist * fogDensity));
+	fogFactor = clamp(fogFactor, 0.0, 1.0);
+
+	return fogFactor;
 }
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
