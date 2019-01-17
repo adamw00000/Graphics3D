@@ -24,17 +24,22 @@ AbstractCamera* GetCamera();
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-// camera
+// cameras
 Camera fpsCamera(glm::vec3(0.0f, -1.0f, 3.0f));
 CarCamera carCamera;
 StaticCamera staticCamera(glm::vec3(0.0f, 30.0f, 0.0f));
 StaticFollowCamera staticFollowCamera(glm::vec3(0.0f, 30.0f, 0.0f));
 AbstractCamera* cameras[]{ &fpsCamera, &carCamera, &staticCamera, &staticFollowCamera };
-
-Model carModel;
-
-float lastX = SCR_WIDTH / 2.0f;
 int cameraId = 1;
+
+//car
+Model carModel;
+float carSpeed = 0.0f;
+float acceleration = 0.01f;
+float maxSpeed = 2.5f;
+
+//magic
+float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
@@ -373,16 +378,52 @@ void processInput(GLFWwindow *window)
 	float distance = 1.0f;
 	glm::vec3 Front = glm::vec3(transform1 * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
 
-	float velocity = MovementSpeed * deltaTime;
 
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-		carModel.position += Front * velocity;
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-		carModel.position -= Front * velocity;
+	{
+		carSpeed = max(min(carSpeed + 5 * acceleration * deltaTime, maxSpeed * deltaTime), -maxSpeed * deltaTime);
+		carModel.position += Front * carSpeed;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		carSpeed = max(min(carSpeed - 5 * acceleration * deltaTime, maxSpeed * deltaTime), -maxSpeed * deltaTime);
+		carModel.position += Front * carSpeed;
+	}
+	else
+	{
+		if (carSpeed > 0)
+		{
+			carSpeed = carSpeed - acceleration * deltaTime;
+		}
+		else if (carSpeed < 0)
+		{
+			carSpeed = carSpeed + acceleration * deltaTime;
+		}
+		carModel.position += Front * carSpeed;
+	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-		carModel.rotation += 1.0f;
+	{
+		if (carSpeed > 0.0f)
+		{
+			carModel.rotation += min(abs(5 * carSpeed) / (maxSpeed * deltaTime), 1.0f);
+		}
+		else
+		{
+			carModel.rotation -= min(abs(5 * carSpeed) / (maxSpeed * deltaTime), 1.0f);
+		}
+	}
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-		carModel.rotation -= 1.0f;
+	{
+		if (carSpeed > 0.0f)
+		{
+			carModel.rotation -= min(abs(5 * carSpeed) / (maxSpeed * deltaTime), 1.0f);
+		}
+		else
+		{
+			carModel.rotation += min(abs(5 * carSpeed) / (maxSpeed * deltaTime), 1.0f);
+		}
+	}
+
 
 	if (cameraId == 0)
 	{
@@ -433,9 +474,9 @@ void processInput(GLFWwindow *window)
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
-		reflectorHeight = min(max(reflectorHeight + 0.01f, -0.2f), 0.0f);
+		reflectorHeight = min(max(reflectorHeight + 0.01f, -0.3f), 0.1f);
 	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
-		reflectorHeight = min(max(reflectorHeight - 0.01f, -0.2f), 0.0f);
+		reflectorHeight = min(max(reflectorHeight - 0.01f, -0.3f), 0.1f);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

@@ -21,6 +21,7 @@ const float PITCH = 0.0f;
 const float SPEED = 2.5f;
 const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
+const int POSITIONS = 15;
 
 class AbstractCamera
 {
@@ -160,6 +161,9 @@ public:
 	glm::vec3 carPosition;
 	const glm::vec3 WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
+	glm::vec3 trailPositions[POSITIONS];
+	bool empty = true;
+
 	// Constructor with vectors
 	CarCamera()
 	{
@@ -173,6 +177,33 @@ public:
 		glm::vec4 distanceVector = glm::vec4(0.0f, height, distance, 1.0f);
 
 		Position = glm::vec3(carModelMatrix * distanceVector);
+
+		if (empty)
+		{
+			for (int i = 0; i < POSITIONS; i++)
+			{
+				trailPositions[i] = Position;
+			}
+			empty = false;
+		}
+		else
+		{
+			glm::vec3 avg(0.0f, 0.0f, 0.0f);
+
+			for (int i = 0; i < POSITIONS - 1; i++)
+			{
+				trailPositions[i] = trailPositions[i + 1];
+			}
+			trailPositions[POSITIONS - 1] = Position;
+
+			for (int i = 0; i < POSITIONS; i++)
+			{
+				avg += trailPositions[i];
+			}
+			avg /= POSITIONS;
+
+			Position = avg;
+		}
 	}
 
 	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
