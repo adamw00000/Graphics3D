@@ -47,9 +47,13 @@ uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
 uniform vec3 viewPos;
 
+//fog
 uniform bool enableFog;
 uniform vec4 fogColor;
 uniform float fogDensity;
+
+//day/night
+uniform bool enableNight;
 
 out vec4 FragColor;
 
@@ -68,13 +72,19 @@ void main()
 	// phase 1: Directional lighting
 	//vec3 result = CalcDirLight(dirLight, norm, viewDir);
 	DirLight localDirLight = dirLight;
+	if (enableNight)
+	{
+		localDirLight.ambient *= 0;
+		localDirLight.diffuse *= 0;
+		localDirLight.specular *= 0;
+	}
 	if (enableFog)
 	{
 		localDirLight.ambient /= 2;
 		localDirLight.diffuse /= 2;
 		localDirLight.specular /= 2;
 	}
-	//result += CalcDirLight(localDirLight, norm, viewDir);
+	result += CalcDirLight(localDirLight, norm, viewDir);
 
 	//// phase 2: Point lights
 	//for (int i = 0; i < NR_POINT_LIGHTS; i++)

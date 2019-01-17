@@ -46,7 +46,11 @@ float lastFrame = 0.0f;
 bool enableFog = false;
 float fogDensity = 0.5f;
 glm::vec4 fogColor(0.5f, 0.5f, 0.5f, 1.0f);
+glm::vec4 blueishColor(196.0f / 256.0f, 220.0f / 256.0f, 229.0f / 256.0f, 1.0f);
 glm::vec4 blackishColor(0.05f, 0.05f, 0.05f, 1.0f);
+
+//day/night
+bool enableNight = false;
 
 int main()
 {
@@ -188,7 +192,7 @@ int main()
 	// -----------
 	while (!glfwWindowShouldClose(window))
 	{
-		glm::vec4 clearColor = enableFog ? fogColor : blackishColor;
+		glm::vec4 clearColor = enableFog ? fogColor : enableNight ? blackishColor : blueishColor;
 		//carCamera.SetYawPitch(-90.0f - carModel.rotation, -20);
 
 		// per-frame time logic
@@ -212,6 +216,7 @@ int main()
 		ourShader.use();
 
 		ourShader.setBool("enableFog", enableFog);
+		ourShader.setBool("enableNight", enableNight);
 		
 		//spotlight + attenuation
 		//ourShader.setVec3("spotLight.position", camera->Position);
@@ -384,7 +389,7 @@ void processInput(GLFWwindow *window)
 	{
 		cKeyState = GLFW_RELEASE;
 	}
-
+	
 	static int fKeyState = GLFW_RELEASE;
 
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && fKeyState == GLFW_RELEASE)
@@ -395,6 +400,18 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_RELEASE)
 	{
 		fKeyState = GLFW_RELEASE;
+	}
+
+	static int nKeyState = GLFW_RELEASE;
+
+	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS && nKeyState == GLFW_RELEASE)
+	{
+		nKeyState = GLFW_PRESS;
+		enableNight = !enableNight;
+	}
+	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_RELEASE)
+	{
+		nKeyState = GLFW_RELEASE;
 	}
 }
 
