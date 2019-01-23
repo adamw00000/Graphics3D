@@ -21,7 +21,7 @@ const float PITCH = 0.0f;
 const float SPEED = 2.5f;
 const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
-const int POSITIONS = 15;
+const int POSITIONS = 50;
 
 class AbstractCamera
 {
@@ -155,8 +155,8 @@ public:
 	// Camera Attributes
 	//const float distance = 1.2f;
 	//const float height = 0.4f;
-	const float distance = 1.0f;
-	const float height = 0.3f;
+	float distance = 1.0f;
+	const float height = 0.35f;
 
 	glm::vec3 carPosition;
 	const glm::vec3 WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);

@@ -2,6 +2,7 @@
 in vec3 Normal;
 in vec3 FragPos;
 in vec2 TexCoords;
+in vec4 GouraudColor;
 
 struct DirLight {
 	vec3 direction;
@@ -57,6 +58,9 @@ uniform float fogDensity;
 //day/night
 uniform bool enableNight;
 
+//gouraud
+uniform bool gouraud;
+
 out vec4 FragColor;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
@@ -66,11 +70,16 @@ float CalcFogFactor(vec3 fragPos, vec3 viewPos);
 
 void main()
 {
+	if (gouraud)
+	{
+		FragColor = GouraudColor;
+		return;
+	}
 	// properties
 	vec3 norm = normalize(Normal);
 	vec3 viewDir = normalize(viewPos - FragPos);
 
-	vec3 result;
+	vec3 result = vec3(0.0, 0.0, 0.0);
 	// phase 1: Directional lighting
 	//vec3 result = CalcDirLight(dirLight, norm, viewDir);
 	DirLight localDirLight = dirLight;

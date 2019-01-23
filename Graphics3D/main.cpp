@@ -51,7 +51,7 @@ bool enableFog = false;
 float fogDensity = 0.5f;
 glm::vec4 fogColor(0.5f, 0.5f, 0.5f, 1.0f);
 glm::vec4 blueishColor(196.0f / 256.0f, 220.0f / 256.0f, 229.0f / 256.0f, 1.0f);
-glm::vec4 blackishColor(0.05f, 0.05f, 0.05f, 1.0f);
+glm::vec4 blackishColor(0.15f, 0.15f, 0.15f, 1.0f);
 
 glm::vec3 lightPolePositions[]
 {
@@ -74,6 +74,9 @@ bool enableNight = false;
 
 //reflectors
 float reflectorHeight = -0.1f;
+
+//gouraud
+bool gouraud = false;
 
 int main()
 {
@@ -192,6 +195,10 @@ int main()
 
 
 	Model otherModel = Model("Models/Cup/Coffee_Cup.obj");
+	//Model otherModel = Model("Models/House/farmhouse_obj.obj");
+	//Model otherModel = Model("Models/Sphere/sphere-1.obj");
+	//Model otherModel = Model("Models/Sphere/sphere-and-cube-lxo-test.obj");
+	//Model otherModel = Model("Models/Ball/earth.3ds");
 
 	Model lightPoleModel = Model("Models/Light Pole/Light Pole.obj");
 	//Model streetModel("Models/Camellia City/OBJ/Camellia City.obj");
@@ -253,6 +260,7 @@ int main()
 
 		ourShader.setBool("enableFog", enableFog);
 		ourShader.setBool("enableNight", enableNight);
+		ourShader.setBool("gouraud", gouraud);
 		
 		//spotlight + attenuation
 		//ourShader.setVec3("spotLight.position", camera->Position);
@@ -405,6 +413,7 @@ int main()
 
 		glm::mat4 otherModelMatrix = glm::mat4(1.0f);
 		otherModelMatrix = glm::translate(otherModelMatrix, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+		//otherModelMatrix = glm::scale(otherModelMatrix, glm::vec3(0.1f));
 		//otherModelMatrix = glm::scale(otherModelMatrix, glm::vec3(0.02f, 0.02f, 0.02f));	// it's a bit too big for our scene, so scale it down
 		ourShader.setMat4("model", otherModelMatrix);
 
@@ -466,9 +475,15 @@ void processInput(GLFWwindow *window)
 	float rotateVelocity = RotateSpeed * deltaTime;
 
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		carCamera.distance = 1.0f;
 		carModel.position += Front * velocity;
+	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		carCamera.distance = -1.0f;
 		carModel.position -= Front * velocity;
+	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 		carModel.rotation += rotateVelocity;
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
@@ -522,9 +537,21 @@ void processInput(GLFWwindow *window)
 		nKeyState = GLFW_RELEASE;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+	static int gKeyState = GLFW_RELEASE;
+
+	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS && gKeyState == GLFW_RELEASE)
+	{
+		gKeyState = GLFW_PRESS;
+		gouraud = !gouraud;
+	}
+	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_RELEASE)
+	{
+		gKeyState = GLFW_RELEASE;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
 		reflectorHeight = min(max(reflectorHeight + 0.01f, -0.3f), 0.1f);
-	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
 		reflectorHeight = min(max(reflectorHeight - 0.01f, -0.3f), 0.1f);
 }
 
